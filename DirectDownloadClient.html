@@ -47,7 +47,7 @@
                             accept: { 'video/mp4': ['.mp4'] }
                         }]
                     };
-                    const fileHandle = await window.showSaveFilePicker();
+                    const fileHandle = await window.showSaveFilePicker(options);
                     const writableStream = await fileHandle.createWritable();
                     const reader = response.body.getReader();
                     const contentLength = +response.headers.get('Content-Length');
@@ -89,10 +89,6 @@
             const messageContainer = document.getElementById('messageContainer');
             messageContainer.textContent = message;
         }
-
-
-
-
 
         // Example usage
         document.getElementById('downloadButton').addEventListener('click', function () {
