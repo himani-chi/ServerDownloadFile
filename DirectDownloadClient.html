@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Download File with Authorization</title>
+    <style>
+        #downloadProgress {
+            visibility: hidden;
+            /* Hide the progress bar initially */
+            width: 300px;
+            /* Set a specific width for the progress bar */
+        }
+    </style>
+</head>
+
+<body>
+    <button id="downloadButton">Download File</button><br /><br>
+    <div id="messageContainer"></div>
+    <progress id="downloadProgress" value="0" max="100"></progress><br />
+
+
+    <script>
+
+        async function downloadLargeFile(url, accessToken) {
+            try {
+                const progressElement = document.getElementById('downloadProgress');
+                progressElement.style.visibility = 'visible'; // Make progress bar visible
+                showMessage('Download has started...');
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch: ${response.statusText}`);
+                }
+
+                if (window.WritableStream && window.showSaveFilePicker) {
+                    const options = {
+                        suggestedName: "Sample.mp4", // Suggest a file name
+                        types: [{
+                            description: 'MP4 Video',
+                            accept: { 'video/mp4': ['.mp4'] }
+                        }]
+                    };
+                    const fileHandle = await window.showSaveFilePicker();
+                    const writableStream = await fileHandle.createWritable();
+                    const reader = response.body.getReader();
+                    const contentLength = +response.headers.get('Content-Length');
+                    let receivedLength = 0; // this will accumulate the received bytes
+
+                    // Create a loop to read the data
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) {
+                            break;
+                        }
+                        receivedLength += value.length;
+                        updateProgress(receivedLength, contentLength);
+                        await writableStream.write(value);
+                    }
+
+                    await writableStream.close();
+                    showMessage('Download completed successfully.');
+                } else {
+                    console.error('The current browser does not support required APIs for streaming download.');
+                    showMessage('Download failed: Unsupported browser');
+                }
+            } catch (error) {
+                console.error('Download error:', error.message);
+                showMessage(`Download failed: ${error.message}`);
+            }
+        }
+
+        function updateProgress(receivedLength, contentLength) {
+            const progressElement = document.getElementById('downloadProgress');
+            progressElement.value = receivedLength;
+            progressElement.max = contentLength;
+            // Optionally, display the percentage of the download
+            const percentage = Math.round((receivedLength / contentLength) * 100);
+            console.log(`Download progress: ${percentage}%`);
+        }
+
+        function showMessage(message) {
+            const messageContainer = document.getElementById('messageContainer');
+            messageContainer.textContent = message;
+        }
+
+
+
+
+
+        // Example usage
+        document.getElementById('downloadButton').addEventListener('click', function () {
+            var url = 'https:/contoso.sharepoint.com/sites/ModernTeam/_layouts/15/download.aspx?UniqueId=398835ef-8b2a-4055-baaa-ea82acb624b2';
+            const accessToken = 'XXX';
+
+            downloadLargeFile(url, accessToken);
+        });
+    </script>
+</body>
+
+</html>

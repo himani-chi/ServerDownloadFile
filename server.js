@@ -61,7 +61,7 @@ function getFileDetails(inputfileName) {
 
 }
 
-app.get('/download-doc', async (req, res) => {
+app.get('/GraphDownload-doc', async (req, res) => {
 
     const endpointUrl = `https://graph.microsoft.com/v1.0/drives/${process.env.DRIVE_ID}/items/${process.env.ITEM_ID}?select=name,@microsoft.graph.downloadUrl`
 
@@ -101,7 +101,7 @@ app.get('/download-doc', async (req, res) => {
     }
 });
 
-app.get('/download-doc2', async (req, res) => {
+app.get('/DirectDownload-doc', async (req, res) => {
 
     const endpointUrl = `https://${process.env.TENANT_NAME}.sharepoint.com/sites/ModernTeam/_layouts/15/download.aspx?UniqueId=524d40f3-6d52-4376-abe4-130f678d05b1`
     
